@@ -5,692 +5,514 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FX取引評価スコア - レーダーチャートツール</title>
     <style>
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FX取引評価スコア - 改善版スタイル</title>
-    <style>
-        /* CSS変数で色を管理 */
-        :root {
-            /* ライトモード */
-            --bg-primary: #ffffff;
-            --bg-secondary: #fafafa;
-            --bg-tertiary: #f5f5f5;
-            --border-color: #ebebeb;
-            --text-primary: #333;
-            --text-secondary: #666;
-            --positive-color: #007eff;
-            --negative-color: #ff2800;
-            --neutral-color: #6b7280;
-            
-            /* カード用 */
-            --card-bg: #fafafa;
-            --card-border: #ebebeb;
-            --card-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
+/* CSS変数で色を管理 */
+:root {
+    /* ライトモード */
+    --bg-primary: #ffffff;
+    --bg-secondary: #fafafa;
+    --bg-tertiary: #f5f5f5;
+    --border-color: #ebebeb;
+    --text-primary: #333;
+    --text-secondary: #666;
+    --text-muted: #999;
+    --positive-color: #007eff;
+    --negative-color: #ff2800;
+    --neutral-color: #6b7280;
+    
+    /* カード用 */
+    --card-bg: #ffffff;
+    --card-border: #ebebeb;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --hover-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    
+    /* ボタン用 */
+    --button-bg: #007eff;
+    --button-hover-shadow: 0 4px 12px rgba(0, 126, 255, 0.3);
+}
 
-        /* ダークモード */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-primary: #000000;
-                --bg-secondary: #181818;
-                --bg-tertiary: #232323;
-                --border-color: #373737;
-                --text-primary: #e0e0e0;
-                --text-secondary: #aaa;
-                --positive-color: #00c8ff;
-                --negative-color: #ff3200;
-                
-                --card-bg: #181818;
-                --card-border: #373737;
-                --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            }
-        }
+/* ダークモード */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary: #000000;
+        --bg-secondary: #181818;
+        --bg-tertiary: #232323;
+        --border-color: #373737;
+        --text-primary: #e0e0e0;
+        --text-secondary: #aaa;
+        --text-muted: #777;
+        --positive-color: #00c8ff;
+        --negative-color: #ff3200;
+        
+        --card-bg: #181818;
+        --card-border: #373737;
+        --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        --hover-shadow: 0 8px 24px rgba(0, 200, 255, 0.15);
+        
+        --button-bg: #00c8ff;
+        --button-hover-shadow: 0 4px 12px rgba(0, 200, 255, 0.3);
+    }
+}
 
-        /* ダークモード手動切り替え用 */
-        body.dark-mode {
-            --bg-primary: #000000;
-            --bg-secondary: #181818;
-            --bg-tertiary: #232323;
-            --border-color: #373737;
-            --text-primary: #e0e0e0;
-            --text-secondary: #aaa;
-            --positive-color: #00c8ff;
-            --negative-color: #ff3200;
-            
-            --card-bg: #181818;
-            --card-border: #373737;
-            --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
+/* ダークモード手動切り替え用 */
+body.dark-mode {
+    --bg-primary: #000000;
+    --bg-secondary: #181818;
+    --bg-tertiary: #232323;
+    --border-color: #373737;
+    --text-primary: #e0e0e0;
+    --text-secondary: #aaa;
+    --text-muted: #777;
+    --positive-color: #00c8ff;
+    --negative-color: #ff3200;
+    
+    --card-bg: #181818;
+    --card-border: #373737;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    --hover-shadow: 0 8px 24px rgba(0, 200, 255, 0.15);
+    
+    --button-bg: #00c8ff;
+    --button-hover-shadow: 0 4px 12px rgba(0, 200, 255, 0.3);
+}
 
-        /* 基本スタイル */
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
+/* 基本スタイル */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
 
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
-            background: var(--bg-primary);
-            min-height: 100vh; 
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-        
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 40px 20px; 
-        }
-        
-        /* ヘッダー */
-        header { 
-            text-align: center; 
-            margin-bottom: 40px;
-        }
-        
-        h1 { 
-            font-size: 2em; 
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-            letter-spacing: 0.02em;
-        }
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+    background: var(--bg-primary);
+    min-height: 100vh; 
+    color: var(--text-primary);
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
 
-        header p {
-            color: var(--text-secondary);
-            font-size: 0.95em;
-        }
+.container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 40px 20px; 
+}
 
-        h2 {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-        }
+/* ヘッダー */
+header { 
+    text-align: center; 
+    margin-bottom: 40px;
+    padding: 30px 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
 
-        h3 {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-        }
-        
-        /* アップロードセクション */
-        .upload-section { 
-            background: var(--card-bg);
-            border-radius: 12px; 
-            padding: 24px; 
-            margin-bottom: 24px;
-            border: 1px solid var(--card-border);
-            box-shadow: var(--card-shadow);
-        }
+h1 { 
+    font-size: 2em; 
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+}
 
-        .upload-section h2 {
-            font-size: 1em;
-            margin-bottom: 16px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        .file-info { 
-            margin-top: 16px; 
-            padding: 12px 16px; 
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            font-size: 0.9em;
-        }
-        
-        .file-info h4 { 
-            color: var(--text-primary);
-            margin-bottom: 4px; 
-            font-size: 0.9em;
-            font-weight: 600;
-        }
-        
-        .file-info div { 
-            color: var(--text-secondary);
-            font-size: 0.85em; 
-        }
-        
-        /* ボタンスタイル */
-        .file-input-wrapper { 
-            position: relative; 
-            overflow: hidden; 
-            display: inline-block; 
-            cursor: pointer; 
-            background: var(--positive-color);
-            color: white; 
-            padding: 10px 24px; 
-            border-radius: 8px;
-            font-size: 0.9em;
-            font-weight: 500;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
+header p {
+    color: var(--text-secondary);
+    font-size: 0.95em;
+}
 
-        .file-input-wrapper:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 126, 255, 0.3);
-        }
-        
-        #fileInput { 
-            display: none;
-        }
+h2 {
+    font-size: 1.3em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
 
-        #fileName {
-            margin-top: 12px;
-            color: var(--text-secondary);
-            font-size: 0.9em;
-        }
-        
-        /* デモコントロール */
-        .demo-controls {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-            border: 1px solid var(--card-border);
-            box-shadow: var(--card-shadow);
-        }
-        
-        .demo-controls h3 {
-            font-size: 1em;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-weight: 500;
-        }
-        
-        .demo-controls button {
-            background: var(--positive-color);
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 4px;
-            font-size: 0.9em;
-            font-weight: 500;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .demo-controls button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 126, 255, 0.3);
-        }
+h3 {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
 
-        /* メインセクション */
-        .top-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-        
-        /* 総合スコアカード */
-        .overall-score { 
-            background: var(--card-bg);
-            border-radius: 12px; 
-            padding: 32px; 
-            text-align: center; 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid var(--card-border);
-            box-shadow: var(--card-shadow);
-        }
-        
-        .overall-score h2 { 
-            font-size: 1em;
-            font-weight: 500;
-            margin-bottom: 16px;
-            color: var(--text-secondary);
-        }
-        
-        .overall-score .score { 
-            font-size: 4.5em; 
-            font-weight: 700; 
-            margin-bottom: 8px;
-            color: var(--positive-color);
-            line-height: 1;
-        }
+/* アップロードセクション */
+.upload-section { 
+    background: var(--bg-secondary);
+    border-radius: 12px; 
+    padding: 24px; 
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+}
 
-        .overall-score .score.low-score {
-            color: var(--negative-color);
-        }
+.upload-section h2 {
+    font-size: 1.1em;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
 
-        .overall-score .score.mid-score {
-            color: var(--text-primary);
-        }
-        
-        .overall-score .rating { 
-            font-size: 0.9em;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
+.file-info { 
+    margin-top: 16px; 
+    padding: 12px 16px; 
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    font-size: 0.9em;
+    border: 1px solid var(--border-color);
+}
 
-        /* チャートコンテナ */
-        .chart-container { 
-            background: var(--card-bg);
-            border-radius: 12px; 
-            padding: 24px; 
-            border: 1px solid var(--card-border);
-            box-shadow: var(--card-shadow);
-        }
-        
-        .chart-container h3 { 
-            color: var(--text-secondary);
-            margin-bottom: 20px; 
-            font-size: 1em; 
-            font-weight: 500;
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-        
-        /* スコアグリッド */
-        .score-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-            gap: 16px; 
-            margin-top: 20px; 
-        }
-        
-        /* スコアカード */
-        .score-card { 
-            background: var(--bg-tertiary);
-            border-radius: 12px; 
-            padding: 20px; 
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            position: relative;
-        }
-        
-        .score-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
+.file-info h4 { 
+    color: var(--text-primary);
+    margin-bottom: 4px; 
+    font-size: 0.9em;
+    font-weight: 600;
+}
 
-        body.dark-mode .score-card:hover {
-            box-shadow: 0 8px 24px rgba(0, 200, 255, 0.1);
-        }
-        
-        .score-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            margin-bottom: 16px; 
-        }
-        
-        .score-title { 
-            font-weight: 500; 
-            color: var(--text-secondary);
-            font-size: 0.9em; 
-        }
-        
-        .score-value { 
-            font-size: 2.5em; 
-            font-weight: 700; 
-            color: var(--positive-color);
-            line-height: 1;
-        }
+.file-info div { 
+    color: var(--text-secondary);
+    font-size: 0.85em; 
+}
 
-        .score-value.low-score {
-            color: var(--negative-color);
-        }
+/* ボタンスタイル */
+.file-input-wrapper { 
+    position: relative; 
+    overflow: hidden; 
+    display: inline-block; 
+    cursor: pointer; 
+    background: var(--button-bg);
+    color: white; 
+    padding: 10px 24px; 
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+}
 
-        .score-value.mid-score {
-            color: var(--text-primary);
-        }
-        
-        .score-metrics { 
-            margin-top: 12px; 
-        }
-        
-        .metric-item { 
-            display: flex; 
-            justify-content: space-between; 
-            margin-bottom: 8px; 
-            font-size: 0.85em; 
-        }
-        
-        .metric-label { 
-            color: var(--text-secondary);
-            opacity: 0.8;
-        }
-        
-        .metric-value { 
-            font-weight: 600; 
-            color: var(--text-primary);
-        }
+.file-input-wrapper:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--button-hover-shadow);
+}
 
-        .metric-value.positive {
-            color: var(--positive-color);
-        }
+#fileInput { 
+    display: none;
+}
 
-        .metric-value.negative {
-            color: var(--negative-color);
-        }
-        
-        /* トレンドボタン */
-        .trend-buttons {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .trend-button {
-            padding: 6px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            background: transparent;
-            color: var(--text-secondary);
-            font-size: 0.85em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .trend-button:hover {
-            border-color: var(--positive-color);
-            color: var(--positive-color);
-            background: rgba(0, 126, 255, 0.05);
-        }
+#fileName {
+    margin-top: 12px;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
 
-        body.dark-mode .trend-button:hover {
-            background: rgba(0, 200, 255, 0.05);
-        }
-        
-        .trend-button.active {
-            background: var(--positive-color);
-            border-color: var(--positive-color);
-            color: white;
-        }
-        
-        /* ローディング */
-        .loading { 
-            display: none; 
-            text-align: center; 
-            padding: 20px; 
-            color: var(--text-secondary);
-        }
-        
-        .spinner { 
-            border: 3px solid var(--border-color);
-            border-top: 3px solid var(--positive-color);
-            border-radius: 50%; 
-            width: 40px; 
-            height: 40px; 
-            animation: spin 1s linear infinite; 
-            margin: 0 auto 12px; 
-        }
-        
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        
-        /* エラーメッセージ */
-        .error-message { 
-            background: rgba(255, 40, 0, 0.1);
-            color: var(--negative-color);
-            padding: 12px 16px; 
-            border-radius: 8px; 
-            margin-top: 16px; 
-            display: none;
-            border: 1px solid rgba(255, 40, 0, 0.2);
-            font-size: 0.9em;
-        }
+/* デモコントロール */
+.demo-controls {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+}
 
-        /* ヘルプアイコン */
-        .help-icon { 
-            cursor: pointer; 
-            color: var(--text-secondary);
-            font-size: 0.9em; 
-            opacity: 0.5; 
-            transition: opacity 0.2s; 
-        }
-        
-        .help-icon:hover { 
-            opacity: 1; 
-        }
-        
-        /* モーダル */
-        .detail-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .detail-modal-content {
-            background: var(--card-bg);
-            border-radius: 16px;
-            max-width: 900px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        }
-        
-        .detail-modal-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .detail-modal-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .detail-modal-score {
-            font-size: 2em;
-            font-weight: 700;
-            color: var(--positive-color);
-        }
-        
-        .detail-modal-close {
-            cursor: pointer;
-            font-size: 1.5em;
-            color: var(--text-secondary);
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            transition: background 0.2s;
-        }
-        
-        .detail-modal-close:hover {
-            background: var(--bg-tertiary);
-        }
-        
-        .detail-modal-body {
-            padding: 24px;
-        }
-        
-        /* 分析ブロック */
-        .analysis-block {
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        
-        .analysis-block h4 {
-            color: var(--text-primary);
-            font-size: 1em;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        .analysis-text {
-            color: var(--text-secondary);
-            line-height: 1.7;
-            font-size: 0.9em;
-        }
-        
-        .highlight-number {
-            color: var(--positive-color);
-            font-weight: 600;
-        }
+.demo-controls h3 {
+    font-size: 1em;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
 
-        .highlight-number.negative {
-            color: var(--negative-color);
-        }
-        
-        /* 強み・弱みカード */
-        .strength-weakness-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-top: 20px;
-        }
-        
-        .strength-card {
-            background: var(--bg-tertiary);
-            border-left: 3px solid var(--positive-color);
-            padding: 16px;
-            border-radius: 8px;
-        }
-        
-        .weakness-card {
-            background: var(--bg-tertiary);
-            border-left: 3px solid var(--negative-color);
-            padding: 16px;
-            border-radius: 8px;
-        }
-        
-        .strength-card h4 {
-            color: var(--positive-color);
-            margin-bottom: 12px;
-            font-size: 0.95em;
-            font-weight: 600;
-        }
-        
-        .weakness-card h4 {
-            color: var(--negative-color);
-            margin-bottom: 12px;
-            font-size: 0.95em;
-            font-weight: 600;
-        }
+.demo-controls button {
+    background: var(--button-bg);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 4px;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-        .strength-card ul, .weakness-card ul {
-            color: var(--text-secondary);
-            font-size: 0.9em;
-            padding-left: 20px;
-        }
+.demo-controls button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--button-hover-shadow);
+}
 
-        .strength-card li, .weakness-card li {
-            margin-bottom: 4px;
-        }
-        
-        /* 改善提案 */
-        .improvement-tips {
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 20px;
-        }
-        
-        .improvement-tips h4 {
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            font-size: 0.95em;
-            font-weight: 600;
-        }
-        
-        .improvement-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .improvement-list li {
-            padding: 8px 0;
-            color: var(--text-secondary);
-            font-size: 0.9em;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        
-        .improvement-list li::before {
-            content: "→";
-            color: var(--positive-color);
-            font-weight: 600;
-        }
-        
-        /* レスポンシブ */
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px 16px;
-            }
+/* メインセクション */
+#analysisResults {
+    display: none;
+}
 
-            .top-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .strength-weakness-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .score-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 1.5em;
-            }
-            
-            .overall-score .score {
-                font-size: 3.5em;
-            }
+.top-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
 
-            .score-value {
-                font-size: 2em;
-            }
-        }
+/* 総合スコアカード */
+.overall-score { 
+    background: var(--bg-secondary);
+    border-radius: 12px; 
+    padding: 32px; 
+    text-align: center; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    min-height: 250px;
+}
 
-        /* スクロールバー */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
+.overall-score h2 { 
+    font-size: 1em;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+}
 
-        ::-webkit-scrollbar-track {
-            background: var(--bg-tertiary);
-        }
+.overall-score .score { 
+    font-size: 4.5em; 
+    font-weight: 700; 
+    margin-bottom: 8px;
+    color: var(--positive-color);
+    line-height: 1;
+}
 
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
+.overall-score .rating { 
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
+/* チャートコンテナ */
+.chart-container { 
+    background: var(--bg-secondary);
+    border-radius: 12px; 
+    padding: 24px; 
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 24px;
+}
 
-        /* Canvas要素のスタイル */
-        canvas {
-            max-width: 100%;
-            height: auto !important;
-        }
+.chart-container h3 { 
+    color: var(--text-primary);
+    margin-bottom: 20px; 
+    font-size: 1.1em; 
+    font-weight: 600;
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+}
+
+/* スコアグリッド */
+.score-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+    gap: 16px; 
+    margin-top: 20px; 
+}
+
+/* スコアカード */
+.score-card { 
+    background: var(--card-bg);
+    border-radius: 12px; 
+    padding: 20px; 
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.score-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.score-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    margin-bottom: 16px; 
+}
+
+.score-title { 
+    font-weight: 500; 
+    color: var(--text-secondary);
+    font-size: 0.9em; 
+}
+
+.score-value { 
+    font-size: 2.5em; 
+    font-weight: 700; 
+    color: var(--positive-color);
+    line-height: 1;
+}
+
+/* スコアレベルによる色分け */
+.score-value[data-score-level="low"] {
+    color: var(--negative-color);
+}
+
+.score-value[data-score-level="mid"] {
+    color: var(--neutral-color);
+}
+
+.score-value[data-score-level="high"] {
+    color: var(--positive-color);
+}
+
+.score-metrics { 
+    margin-top: 12px; 
+}
+
+.metric-item { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 8px; 
+    font-size: 0.85em; 
+}
+
+.metric-label { 
+    color: var(--text-secondary);
+}
+
+.metric-value { 
+    font-weight: 600; 
+    color: var(--text-primary);
+}
+
+/* トレンドボタン */
+.trend-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.trend-button {
+    padding: 6px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.trend-button:hover {
+    border-color: var(--positive-color);
+    color: var(--positive-color);
+}
+
+.trend-button.active {
+    background: var(--button-bg);
+    border-color: var(--button-bg);
+    color: white;
+}
+
+/* ローディング */
+.loading { 
+    display: none; 
+    text-align: center; 
+    padding: 20px; 
+    color: var(--text-secondary);
+}
+
+.spinner { 
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--positive-color);
+    border-radius: 50%; 
+    width: 40px; 
+    height: 40px; 
+    animation: spin 1s linear infinite; 
+    margin: 0 auto 12px; 
+}
+
+@keyframes spin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+
+/* エラーメッセージ */
+.error-message { 
+    background: rgba(255, 40, 0, 0.1);
+    color: var(--negative-color);
+    padding: 12px 16px; 
+    border-radius: 8px; 
+    margin-top: 16px; 
+    display: none;
+    border: 1px solid rgba(255, 40, 0, 0.2);
+    font-size: 0.9em;
+}
+
+/* ヘルプアイコン */
+.help-icon { 
+    cursor: pointer; 
+    color: var(--text-muted);
+    font-size: 0.9em; 
+    opacity: 0.7; 
+    transition: opacity 0.2s; 
+}
+
+.help-icon:hover { 
+    opacity: 1; 
+    color: var(--text-secondary);
+}
+
+/* Canvas要素のスタイル */
+canvas {
+    max-width: 100%;
+    height: auto !important;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 16px;
+    }
+
+    .top-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .score-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    h1 {
+        font-size: 1.5em;
+    }
+    
+    .overall-score .score {
+        font-size: 3.5em;
+    }
+
+    .score-value {
+        font-size: 2em;
+    }
+}
+
+/* スクロールバー */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
     </style>
 </head>
 <body>
